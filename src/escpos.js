@@ -307,8 +307,19 @@ class EscPosEncoder {
     const n = typeof name === 'number' ? name : (CODEPAGES[name] ?? 0);
     // Send FS . (0x1C 0x2E) before ESC t to ensure Chinese mode is disabled
     this._parts.push(Buffer.from([0x1C, 0x2E, 0x1B, 0x74, n & 0xFF]));
+    // For Arabic CP864, automatically set right-side character spacing to 0 (ESC SP 0)
+    // so cursive connecting strokes connect seamlessly without any gaps
+    if (name === 'cp864' || n === 22) {
+      this.charSpacing(0);
+    }
     // Track the active codepage name for auto-conversion (e.g. Arabic cp864)
     if (typeof name === 'string') this._activeCodepage = name;
+    return this;
+  }
+
+  /** ESC SP n — Set right-side character spacing in dots (0 removes gaps between letters) */
+  charSpacing(dots = 0) {
+    this._parts.push(Buffer.from([0x1B, 0x20, Math.max(0, Math.min(255, dots))]));
     return this;
   }
 

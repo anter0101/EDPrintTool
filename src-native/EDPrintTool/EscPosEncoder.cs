@@ -105,6 +105,7 @@ public class EscPosEncoder
         {
             Write(0x1B, 0x74, info.escArg);
             _encoding = ResolveEncoding(info.dotnetCp, name);
+            if (name == "cp864") CharSpacing(0);
         }
         else
         {
@@ -118,6 +119,14 @@ public class EscPosEncoder
     public EscPosEncoder Codepage(byte n)
     {
         Write(0x1C, 0x2E, 0x1B, 0x74, n);
+        if (n == 22) CharSpacing(0);
+        return this;
+    }
+
+    /// <summary>ESC SP n — Set right-side character spacing in dots (0-255).</summary>
+    public EscPosEncoder CharSpacing(int dots = 0)
+    {
+        Write(0x1B, 0x20, (byte)Math.Clamp(dots, 0, 255));
         return this;
     }
 
