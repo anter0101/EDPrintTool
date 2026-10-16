@@ -82,16 +82,25 @@ public class EscPosEncoder
 
     // ─── Printer control ──────────────────────────────────────
 
-    /// <summary>ESC @ — Reset printer to defaults.</summary>
+    /// <summary>ESC @ — Reset printer to defaults + FS . — Cancel Chinese/Kanji double-byte mode.</summary>
     public EscPosEncoder Initialize()
     {
-        Write(0x1B, 0x40);
+        Write(0x1B, 0x40, 0x1C, 0x2E);
+        return this;
+    }
+
+    /// <summary>FS . — Cancel Chinese / Kanji character mode.</summary>
+    public EscPosEncoder CancelKanji()
+    {
+        Write(0x1C, 0x2E);
         return this;
     }
 
     /// <summary>ESC t n — Select character code page on the printer and update encoder.</summary>
     public EscPosEncoder Codepage(string name)
     {
+        // Cancel Chinese/Kanji mode so 0x80-0xFF bytes are not grouped as Chinese chars
+        Write(0x1C, 0x2E);
         if (Codepages.TryGetValue(name, out var info))
         {
             Write(0x1B, 0x74, info.escArg);
@@ -108,7 +117,7 @@ public class EscPosEncoder
     /// <summary>ESC t n — Select character code page by number.</summary>
     public EscPosEncoder Codepage(byte n)
     {
-        Write(0x1B, 0x74, n);
+        Write(0x1C, 0x2E, 0x1B, 0x74, n);
         return this;
     }
 

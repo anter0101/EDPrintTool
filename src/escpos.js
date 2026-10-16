@@ -183,22 +183,27 @@ class EscPosEncoder {
 
   // ─── Printer control ──────────────────────────────────────
 
-  /** ESC @ — Reset printer to defaults */
+  /** ESC @ — Reset printer to defaults + FS . — Cancel Chinese/Kanji double-byte mode */
   initialize() {
-    // Only ESC @ — the safest init. Extra commands (ESC M, GS !, ESC a)
-    // can cause errors on printers with limited ESC/POS support like
-    // Star TSP100 in emulation mode.
-    this._parts.push(Buffer.from([0x1B, 0x40]));
+    // ESC @ (Reset) + FS . (Cancel Chinese/Kanji mode so 0x80-0xFF bytes are not grouped as Chinese chars)
+    this._parts.push(Buffer.from([0x1B, 0x40, 0x1C, 0x2E]));
     if (this._codepage && CODEPAGES[this._codepage] !== undefined) {
       this.codepage(this._codepage);
     }
     return this;
   }
 
+  /** FS . — Cancel Chinese / Kanji character mode */
+  cancelKanji() {
+    this._parts.push(Buffer.from([0x1C, 0x2E]));
+    return this;
+  }
+
   /** ESC t n — Select character code page */
   codepage(name) {
     const n = typeof name === 'number' ? name : (CODEPAGES[name] ?? 0);
-    this._parts.push(Buffer.from([0x1B, 0x74, n & 0xFF]));
+    // Send FS . (0x1C 0x2E) before ESC t to ensure Chinese mode is disabled
+    this._parts.push(Buffer.from([0x1C, 0x2E, 0x1B, 0x74, n & 0xFF]));
     // Track the active codepage name for auto-conversion (e.g. Arabic cp864)
     if (typeof name === 'string') this._activeCodepage = name;
     return this;
