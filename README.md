@@ -187,7 +187,7 @@ Responses include the `requestId` for correlation:
 | `autoCut` | `true` | Send cut command after print |
 | `cutType` | `partial` | `partial` or `full` cut |
 | `feedLines` | `4` | Lines to feed before cutting |
-| `codepage` | `cp1252` | Code page: cp437, cp850, cp858, cp860, cp863, cp865, cp1252 |
+| `codepage` | `cp1252` | Code page: cp437, cp850, cp858, cp860, cp863, cp865, cp1252, cp864 |
 | `printerProfile` | `generic` | Printer capability profile |
 
 ## Character Encoding
@@ -205,6 +205,7 @@ You can change the codepage per-printer in settings, or per-job with the `codepa
 | `cp860` | 3 | Portuguese |
 | `cp863` | 4 | Canadian French |
 | `cp865` | 5 | Nordic |
+| `cp864` | 22 | Arabic |
 
 ## ESC/POS Commands
 

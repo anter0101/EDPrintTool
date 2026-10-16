@@ -605,7 +605,7 @@
           "orientation": { "type": "string", "enum": ["N", "R", "I", "B"], "description": "N=normal, R=rotated, I=inverted, B=bottom-up", "default": "N" },
           "mediaType": { "type": "string", "enum": ["T", "D"], "description": "T=thermal transfer, D=direct thermal", "default": "T" },
           "printMode": { "type": "string", "enum": ["T", "P", "C"], "description": "T=tear-off, P=peel-off, C=cutter", "default": "T" },
-          "codepage": { "type": "string", "enum": ["", "cp437", "cp850", "cp858", "cp860", "cp863", "cp865", "cp1252"], "description": "Code page for text encoding. Default cp1252 supports Spanish/Western European characters (á é í ó ú ñ ¡ ¿).", "default": "cp1252" },
+          "codepage": { "type": "string", "enum": ["", "cp437", "cp850", "cp858", "cp860", "cp863", "cp865", "cp1252", "cp864"], "description": "Code page for text encoding. Default cp1252 supports Spanish/Western European characters (á é í ó ú ñ ¡ ¿), cp864 supports Arabic.", "default": "cp1252" },
           "printerProfile": { "type": "string", "enum": ["generic", "epson", "star", "bixolon", "citizen", "custom"], "description": "ESC/POS printer capability profile", "default": "generic" },
           "paperWidth": { "type": "string", "enum": ["80mm", "72mm", "58mm"], "description": "ESC/POS paper width", "default": "80mm" },
           "autoCut": { "type": "boolean", "description": "Send cut command after ESC/POS print", "default": true },
