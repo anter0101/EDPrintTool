@@ -35,7 +35,7 @@ public class PrinterSettings
     public string PrintMode { get; set; } = "T";
 
     [JsonPropertyName("codepage")]
-    public string Codepage { get; set; } = ""; // "" = printer default, or "cp437", "cp850", "cp858", "cp1252"
+    public string Codepage { get; set; } = ""; // "" = printer default, or "cp437", "cp850", "cp858", "cp1252", "cp864"
 
     // ESC/POS specific
     [JsonPropertyName("paperWidth")]

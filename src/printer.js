@@ -91,7 +91,7 @@ const DEFAULT_SETTINGS = {
   orientation: 'N',           // N=normal, R=rotated, I=inverted, B=bottom-up
   mediaType: 'T',             // T=thermal transfer, D=direct thermal
   printMode: 'T',             // T=tear-off, P=peel-off, C=cutter
-  codepage: '',              // '' = printer default, or 'cp437', 'cp850', 'cp858', 'cp1252'
+  codepage: '',              // '' = printer default, or 'cp437','cp850','cp858','cp1252','cp864'
   printerProfile: 'generic', // printer capability profile
   // ESC/POS settings
   paperWidth: '80mm',         // '80mm', '72mm', or '58mm'

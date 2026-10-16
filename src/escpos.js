@@ -32,6 +32,7 @@ const CODEPAGES = {
   cp863:  4,  // Canadian French
   cp865:  5,  // Nordic
   cp1252: 16, // Windows Latin 1
+  cp864:  22, // Arabic (Epson ESC t argument 22)
 };
 
 // Paper width → default character columns (Font A, 12x24)
@@ -40,6 +41,126 @@ const COLUMNS = {
   '72mm': 42,
   '58mm': 32,
 };
+
+/**
+ * Unicode → CP864 byte map for Arabic characters (U+0600–U+06FF range).
+ *
+ * CP864 is the Arabic code page used by Epson/Star thermal printers (ESC t 22).
+ * Arabic characters occupy bytes 0xA0–0xFF in CP864.
+ *
+ * This table allows the JS encoder to automatically convert Arabic Unicode strings
+ * to the correct CP864 byte values without requiring iconv-lite or any native addon.
+ *
+ * Reference: IBM CP864 / EBCDIC 864 character set.
+ */
+const UNICODE_TO_CP864 = {
+  // Spacing / special Arabic
+  0x00A0: 0xFF, // NO-BREAK SPACE
+  0x00B0: 0xF8, // DEGREE SIGN
+  0x00B7: 0xFA, // MIDDLE DOT
+  0x060C: 0xAC, // ARABIC COMMA
+  0x061B: 0xBB, // ARABIC SEMICOLON
+  0x061F: 0xBF, // ARABIC QUESTION MARK
+  // Arabic presentation intro / Lam-Alef ligatures
+  0x0621: 0xC1, // ء HAMZA
+  0x0622: 0xC2, // آ ALEF WITH MADDA ABOVE
+  0x0623: 0xC3, // أ ALEF WITH HAMZA ABOVE
+  0x0624: 0xC4, // ؤ WAW WITH HAMZA ABOVE
+  0x0625: 0xC5, // إ ALEF WITH HAMZA BELOW
+  0x0626: 0xC6, // ئ YEH WITH HAMZA ABOVE
+  0x0627: 0xC7, // ا ALEF
+  0x0628: 0xC8, // ب BA
+  0x0629: 0xC9, // ة TA MARBUTA
+  0x062A: 0xCA, // ت TA
+  0x062B: 0xCB, // ث THA
+  0x062C: 0xCC, // ج JEEM
+  0x062D: 0xCD, // ح HA
+  0x062E: 0xCE, // خ KHA
+  0x062F: 0xCF, // د DAL
+  0x0630: 0xD0, // ذ THAL
+  0x0631: 0xD1, // ر RA
+  0x0632: 0xD2, // ز ZAIN
+  0x0633: 0xD3, // س SEEN
+  0x0634: 0xD4, // ش SHEEN
+  0x0635: 0xD5, // ص SAD
+  0x0636: 0xD6, // ض DAD
+  0x0637: 0xD7, // ط TA (emphatic)
+  0x0638: 0xD8, // ظ ZA (emphatic)
+  0x0639: 0xD9, // ع AIN
+  0x063A: 0xDA, // غ GHAIN
+  0x0640: 0xE0, // ـ TATWEEL
+  0x0641: 0xE1, // ف FA
+  0x0642: 0xE2, // ق QAF
+  0x0643: 0xE3, // ك KAF
+  0x0644: 0xE4, // ل LAM
+  0x0645: 0xE5, // م MEEM
+  0x0646: 0xE6, // ن NOON
+  0x0647: 0xE7, // ه HA
+  0x0648: 0xE8, // و WAW
+  0x0649: 0xE9, // ى ALEF MAQSURA
+  0x064A: 0xEA, // ي YEH
+  0x064B: 0xEB, // ً FATHATAN
+  0x064C: 0xEC, // ٌ DAMMATAN
+  0x064D: 0xED, // ٍ KASRATAN
+  0x064E: 0xEE, // َ FATHA
+  0x064F: 0xEF, // ُ DAMMA
+  0x0650: 0xF0, // ِ KASRA
+  0x0651: 0xF1, // ّ SHADDA
+  0x0652: 0xF2, // ْ SUKUN
+  // Presentation forms A (U+FE70–U+FEFF) — isolated/initial/medial/final forms
+  0xFE70: 0xF3, // ﹰ FATHATAN ISOLATED
+  0xFE71: 0xF4, // TATWEEL WITH FATHATAN
+  0xFE72: 0xF5, // ﹲ DAMMATAN ISOLATED
+  0xFE74: 0xF6, // ﹴ KASRATAN ISOLATED
+  0xFE76: 0xF7, // ﹶ FATHA ISOLATED
+  0xFE77: 0xF8, // FATHA ON TATWEEL
+  0xFE78: 0xF9, // ﹸ DAMMA ISOLATED
+  0xFE79: 0xFA, // DAMMA ON TATWEEL
+  0xFE7A: 0xFB, // ﹺ KASRA ISOLATED
+  0xFE7B: 0xFC, // KASRA ON TATWEEL
+  0xFE7C: 0xFD, // ﹼ SHADDA ISOLATED
+  0xFE7D: 0xFE, // SHADDA ON TATWEEL
+  0xFE7E: 0xFF, // ﹾ SUKUN ISOLATED
+  // Arabic-Indic digits
+  0x0660: 0xB0, // ٠ ARABIC-INDIC DIGIT ZERO
+  0x0661: 0xB1, // ١ ARABIC-INDIC DIGIT ONE
+  0x0662: 0xB2, // ٢ ARABIC-INDIC DIGIT TWO
+  0x0663: 0xB3, // ٣ ARABIC-INDIC DIGIT THREE
+  0x0664: 0xB4, // ٤ ARABIC-INDIC DIGIT FOUR
+  0x0665: 0xB5, // ٥ ARABIC-INDIC DIGIT FIVE
+  0x0666: 0xB6, // ٦ ARABIC-INDIC DIGIT SIX
+  0x0667: 0xB7, // ٧ ARABIC-INDIC DIGIT SEVEN
+  0x0668: 0xB8, // ٨ ARABIC-INDIC DIGIT EIGHT
+  0x0669: 0xB9, // ٩ ARABIC-INDIC DIGIT NINE
+};
+
+/**
+ * Convert a Unicode string to a CP864 byte Buffer.
+ * Characters that exist in CP864 are mapped to their single-byte equivalent.
+ * ASCII characters (0x00–0x7F) pass through unchanged.
+ * Unmappable characters are replaced with '?' (0x3F).
+ *
+ * @param {string} str
+ * @returns {Buffer}
+ */
+function toCP864(str) {
+  const bytes = [];
+  for (const ch of str) {
+    const cp = ch.codePointAt(0);
+    if (cp <= 0x7F) {
+      // ASCII — same in CP864
+      bytes.push(cp);
+    } else if (UNICODE_TO_CP864[cp] !== undefined) {
+      bytes.push(UNICODE_TO_CP864[cp]);
+    } else {
+      // Unmappable — substitute with '?'
+      bytes.push(0x3F);
+    }
+  }
+  return Buffer.from(bytes);
+}
+
+
 
 class EscPosEncoder {
   /**
@@ -52,6 +173,9 @@ class EscPosEncoder {
     this._parts = [];
     this._columns = options.columns || COLUMNS[options.paperWidth] || 48;
     this._codepage = options.codepage || null;
+    // Tracks the currently active codepage name so text methods can
+    // auto-convert Arabic Unicode → CP864 bytes when cp864 is active.
+    this._activeCodepage = this._codepage;
     // Use latin1 encoding — maps 1:1 to the lower 256 Unicode codepoints
     // which covers all cp1252/ISO-8859-1 printable characters (á, é, ñ, etc.)
     this._textEncoding = 'latin1';
@@ -75,6 +199,8 @@ class EscPosEncoder {
   codepage(name) {
     const n = typeof name === 'number' ? name : (CODEPAGES[name] ?? 0);
     this._parts.push(Buffer.from([0x1B, 0x74, n & 0xFF]));
+    // Track the active codepage name for auto-conversion (e.g. Arabic cp864)
+    if (typeof name === 'string') this._activeCodepage = name;
     return this;
   }
 
@@ -131,15 +257,31 @@ class EscPosEncoder {
 
   // ─── Content ──────────────────────────────────────────────
 
+  /**
+   * Encode a string to bytes using the active codepage.
+   * When cp864 is active, Arabic Unicode characters are automatically
+   * converted to their CP864 byte equivalents via the UNICODE_TO_CP864 table.
+   * For all other codepages, latin1 (1:1 byte pass-through) is used.
+   *
+   * @param {string} str
+   * @returns {Buffer}
+   */
+  _encodeStr(str) {
+    if (this._activeCodepage === 'cp864') {
+      return toCP864(str);
+    }
+    return Buffer.from(str, this._textEncoding);
+  }
+
   /** Write text without newline */
   text(str) {
-    this._parts.push(Buffer.from(str, this._textEncoding));
+    this._parts.push(this._encodeStr(str));
     return this;
   }
 
   /** Write text followed by newline */
   line(str) {
-    this._parts.push(Buffer.from(str + '\n', this._textEncoding));
+    this._parts.push(this._encodeStr(str + '\n'));
     return this;
   }
 
@@ -157,14 +299,14 @@ class EscPosEncoder {
     if (Buffer.isBuffer(content)) {
       this._parts.push(content);
     } else {
-      this._parts.push(Buffer.from(content, this._textEncoding));
+      this._parts.push(this._encodeStr(content));
     }
     return this;
   }
 
   /** Print a horizontal rule filling the full paper width */
   rule(char = '-') {
-    this._parts.push(Buffer.from(char[0].repeat(this._columns) + '\n', this._textEncoding));
+    this._parts.push(this._encodeStr(char[0].repeat(this._columns) + '\n'));
     return this;
   }
 
@@ -203,7 +345,7 @@ class EscPosEncoder {
       }
     }
 
-    this._parts.push(Buffer.from(row + '\n', this._textEncoding));
+    this._parts.push(this._encodeStr(row + '\n'));
     return this;
   }
 
@@ -214,7 +356,7 @@ class EscPosEncoder {
   pair(left, right, fill = '.') {
     const gap = this._columns - left.length - right.length;
     const middle = gap > 0 ? fill[0].repeat(gap) : ' ';
-    this._parts.push(Buffer.from(left + middle + right + '\n', this._textEncoding));
+    this._parts.push(this._encodeStr(left + middle + right + '\n'));
     return this;
   }
 
@@ -223,6 +365,7 @@ class EscPosEncoder {
     this._parts.push(Buffer.from('\n'));
     return this;
   }
+
 
   // ─── Paper handling ───────────────────────────────────────
 
@@ -447,4 +590,5 @@ class EscPosEncoder {
   }
 }
 
-module.exports = { EscPosEncoder, CODEPAGES, COLUMNS };
+module.exports = { EscPosEncoder, CODEPAGES, COLUMNS, toCP864, UNICODE_TO_CP864 };
+

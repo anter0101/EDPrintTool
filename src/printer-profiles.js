@@ -25,7 +25,7 @@ const PROFILES = {
       invert: false,       // not all printers support reverse video
       codepage: true,
     },
-    defaultCodepage: 'cp437',
+    defaultCodepage: 'cp437',  // use 'cp864' for Arabic-capable Epson TM printers
     cutCommand: 'gsv',     // GS V Function B
   },
 
@@ -43,7 +43,7 @@ const PROFILES = {
       invert: true,
       codepage: true,
     },
-    defaultCodepage: 'cp437',
+    defaultCodepage: 'cp437',  // use 'cp864' for Arabic-capable Epson TM printers
     cutCommand: 'gsv',     // GS V 0x41/0x42 — native, full support
   },
 

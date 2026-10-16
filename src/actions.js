@@ -56,7 +56,7 @@ async function dispatch(msg) {
       const p = printer.getPrinter(msg.printerId);
       if (!p) throw new Error(`Printer not found: ${msg.printerId}`);
       const s = p.settings || {};
-      const encoder = new EscPosEncoder({ paperWidth: s.paperWidth });
+      const encoder = new EscPosEncoder({ paperWidth: s.paperWidth, codepage: s.codepage || null });
       const copies = msg.copies || 1;
       for (let i = 0; i < copies; i++) {
         for (const cmd of msg.commands) {

@@ -36,6 +36,7 @@ public class EscPosEncoder
         ["cp863"]  = (4,  863),   // Canadian French
         ["cp865"]  = (5,  865),   // Nordic
         ["cp1252"] = (16, 1252),  // Windows Latin 1 (best for Spanish)
+        ["cp864"]  = (22, 864),   // Arabic (Epson ESC t argument 22)
     };
 
     public int ColumnWidth => _columns;
@@ -44,15 +45,39 @@ public class EscPosEncoder
     {
         _columns = columns ?? (ColumnsByWidth.TryGetValue(paperWidth, out var c) ? c : 48);
 
-        // Register codepage providers for .NET (required for non-UTF encodings)
+        // Register codepage providers for .NET (required for non-UTF encodings on .NET Core/5+)
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         // Default to cp1252 (Windows Latin 1) — covers all Western European/Spanish chars
         var cpName = codepage ?? "cp1252";
         if (Codepages.TryGetValue(cpName, out var info))
-            _encoding = Encoding.GetEncoding(info.dotnetCp);
+            _encoding = ResolveEncoding(info.dotnetCp, cpName);
         else
             _encoding = Encoding.GetEncoding(1252);
+    }
+
+    /// <summary>
+    /// Resolve a .NET codepage number to an Encoding, with a clear error message
+    /// if the encoding is unavailable (e.g. stripped runtime without CodePages support).
+    /// </summary>
+    private static Encoding ResolveEncoding(int dotnetCp, string cpName)
+    {
+        try
+        {
+            return Encoding.GetEncoding(dotnetCp);
+        }
+        catch (NotSupportedException ex)
+        {
+            throw new InvalidOperationException(
+                $"Encoding '{cpName}' (codepage {dotnetCp}) is not available on this runtime. " +
+                "Ensure the System.Text.Encoding.CodePages NuGet package is installed and " +
+                "Encoding.RegisterProvider(CodePagesEncodingProvider.Instance) has been called.", ex);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new InvalidOperationException(
+                $"Encoding '{cpName}' (codepage {dotnetCp}) is not a valid codepage number.", ex);
+        }
     }
 
     // ─── Printer control ──────────────────────────────────────
@@ -70,7 +95,7 @@ public class EscPosEncoder
         if (Codepages.TryGetValue(name, out var info))
         {
             Write(0x1B, 0x74, info.escArg);
-            _encoding = Encoding.GetEncoding(info.dotnetCp);
+            _encoding = ResolveEncoding(info.dotnetCp, name);
         }
         else
         {
