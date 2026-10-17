@@ -28,6 +28,16 @@ npm start
 
 Open http://localhost:8189 to access the dashboard. Add a printer, configure its settings, and print a test page.
 
+### Browser CORS
+
+The local REST API allows the frontend development origins `http://localhost:3000`, `http://localhost:3001`, `http://127.0.0.1:3000`, and `http://127.0.0.1:3001`. For another frontend origin, set `EDPRINT_ALLOWED_ORIGINS` to a comma-separated list of exact origins before starting EDPrintTool:
+
+```bash
+EDPRINT_ALLOWED_ORIGINS="https://pos.example.com,http://192.168.1.20:3000" npm start
+```
+
+Restart EDPrintTool after changing the allowlist. Private Network Access preflight requests are also allowed when the browser requests access to the local agent.
+
 ## Local vs Relay Mode
 
 **Local mode** (`ws://localhost:8189`) works great for same-machine printing, but modern browsers (Chrome, Edge) will show a "connect to devices on your local network" permission prompt when your HTTPS web app connects to localhost. This is a [Chrome Private Network Access](https://developer.chrome.com/blog/local-network-access) security feature that cannot be bypassed — even QZ Tray faces the same limitation.
@@ -69,19 +79,19 @@ No client library required — just `fetch`:
 
 ```js
 // Print ZPL
-fetch('http://localhost:8189/api/print/my-printer-id', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+fetch("http://localhost:8189/api/print/my-printer-id", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    zpl: '^XA^FO50,50^ADN,36,20^FDHello^FS^XZ',
-    copies: 1
-  })
+    zpl: "^XA^FO50,50^ADN,36,20^FDHello^FS^XZ",
+    copies: 1,
+  }),
 });
 
 // Print ESC/POS receipt
-fetch('http://localhost:8189/api/print-escpos/my-printer-id', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+fetch("http://localhost:8189/api/print-escpos/my-printer-id", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     commands: [
       ["initialize"],
@@ -102,28 +112,28 @@ fetch('http://localhost:8189/api/print-escpos/my-printer-id', {
       ["bold", true],
       ["pair", "TOTAL", "$16.81"],
       ["bold", false],
-      ["cut", "partial", 4]
-    ]
-  })
+      ["cut", "partial", 4],
+    ],
+  }),
 });
 
 // Print a PDF document (USB/spooler printers only)
 const pdfBase64 = btoa(/* ... raw PDF bytes ... */); // or use FileReader
-fetch('http://localhost:8189/api/print-document/my-printer-id', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ file: pdfBase64, copies: 1 })
+fetch("http://localhost:8189/api/print-document/my-printer-id", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ file: pdfBase64, copies: 1 }),
 });
 
 // Quick print — send raw data to an IP:port without saving a printer
-fetch('http://localhost:8189/api/print-raw', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+fetch("http://localhost:8189/api/print-raw", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    host: '192.168.1.100',
+    host: "192.168.1.100",
     port: 9100,
-    zpl: '^XA^FO50,50^ADN,36,20^FDHello^FS^XZ'
-  })
+    zpl: "^XA^FO50,50^ADN,36,20^FDHello^FS^XZ",
+  }),
 });
 ```
 
@@ -131,21 +141,21 @@ fetch('http://localhost:8189/api/print-raw', {
 
 ### REST Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/status` | Server status and printer count |
-| `GET` | `/api/printers` | List configured printers |
-| `GET` | `/api/printers/discover` | Discover system printers |
-| `GET` | `/api/label-presets` | Available ZPL label sizes |
-| `GET` | `/api/printer-profiles` | ESC/POS printer capability profiles |
-| `GET` | `/api/printers/:id/debug` | Debug info + hex dump of test payload |
-| `POST` | `/api/printers` | Add a printer |
-| `PATCH` | `/api/printers/:id/settings` | Update printer settings |
-| `DELETE` | `/api/printers/:id` | Remove a printer |
-| `POST` | `/api/print/:id` | Print ZPL to a printer |
-| `POST` | `/api/print-escpos/:id` | Print ESC/POS commands to a printer |
-| `POST` | `/api/print-document/:id` | Print PDF through OS spooler (USB only) |
-| `POST` | `/api/print-raw` | Quick print to IP:port (no saved printer) |
+| Method   | Endpoint                     | Description                               |
+| -------- | ---------------------------- | ----------------------------------------- |
+| `GET`    | `/api/status`                | Server status and printer count           |
+| `GET`    | `/api/printers`              | List configured printers                  |
+| `GET`    | `/api/printers/discover`     | Discover system printers                  |
+| `GET`    | `/api/label-presets`         | Available ZPL label sizes                 |
+| `GET`    | `/api/printer-profiles`      | ESC/POS printer capability profiles       |
+| `GET`    | `/api/printers/:id/debug`    | Debug info + hex dump of test payload     |
+| `POST`   | `/api/printers`              | Add a printer                             |
+| `PATCH`  | `/api/printers/:id/settings` | Update printer settings                   |
+| `DELETE` | `/api/printers/:id`          | Remove a printer                          |
+| `POST`   | `/api/print/:id`             | Print ZPL to a printer                    |
+| `POST`   | `/api/print-escpos/:id`      | Print ESC/POS commands to a printer       |
+| `POST`   | `/api/print-document/:id`    | Print PDF through OS spooler (USB only)   |
+| `POST`   | `/api/print-raw`             | Quick print to IP:port (no saved printer) |
 
 ### WebSocket
 
@@ -167,28 +177,28 @@ Responses include the `requestId` for correlation:
 
 ### ZPL (Label Printers)
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `labelPreset` | `4x6` | Label size preset |
-| `widthDots` | `812` | Label width in dots |
-| `heightDots` | `1218` | Label height in dots |
-| `dpi` | `203` | Printer DPI (203 or 304) |
-| `darkness` | `15` | Print darkness (0–30) |
-| `speed` | `4` | Print speed in inches/sec (2–14) |
-| `orientation` | `N` | N=normal, R=rotated, I=inverted, B=bottom-up |
-| `mediaType` | `T` | T=thermal transfer, D=direct thermal |
-| `printMode` | `T` | T=tear-off, P=peel-off, C=cutter |
+| Setting       | Default | Description                                  |
+| ------------- | ------- | -------------------------------------------- |
+| `labelPreset` | `4x6`   | Label size preset                            |
+| `widthDots`   | `812`   | Label width in dots                          |
+| `heightDots`  | `1218`  | Label height in dots                         |
+| `dpi`         | `203`   | Printer DPI (203 or 304)                     |
+| `darkness`    | `15`    | Print darkness (0–30)                        |
+| `speed`       | `4`     | Print speed in inches/sec (2–14)             |
+| `orientation` | `N`     | N=normal, R=rotated, I=inverted, B=bottom-up |
+| `mediaType`   | `T`     | T=thermal transfer, D=direct thermal         |
+| `printMode`   | `T`     | T=tear-off, P=peel-off, C=cutter             |
 
 ### ESC/POS (Receipt Printers)
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `paperWidth` | `80mm` | Paper width (80mm, 72mm, or 58mm) |
-| `autoCut` | `true` | Send cut command after print |
-| `cutType` | `partial` | `partial` or `full` cut |
-| `feedLines` | `4` | Lines to feed before cutting |
-| `codepage` | `cp1252` | Code page: cp437, cp850, cp858, cp860, cp863, cp865, cp1252, cp864 |
-| `printerProfile` | `generic` | Printer capability profile |
+| Setting          | Default   | Description                                                        |
+| ---------------- | --------- | ------------------------------------------------------------------ |
+| `paperWidth`     | `80mm`    | Paper width (80mm, 72mm, or 58mm)                                  |
+| `autoCut`        | `true`    | Send cut command after print                                       |
+| `cutType`        | `partial` | `partial` or `full` cut                                            |
+| `feedLines`      | `4`       | Lines to feed before cutting                                       |
+| `codepage`       | `cp1252`  | Code page: cp437, cp850, cp858, cp860, cp863, cp865, cp1252, cp864 |
+| `printerProfile` | `generic` | Printer capability profile                                         |
 
 ## Character Encoding
 
@@ -196,46 +206,46 @@ ESC/POS printers use single-byte codepages, not UTF-8. EDPrintTool defaults to *
 
 You can change the codepage per-printer in settings, or per-job with the `codepage` command. The encoder automatically converts text to the correct single-byte encoding.
 
-| Codepage | ESC/POS ID | Coverage |
-|----------|------------|----------|
-| `cp1252` | 16 | **Default.** Western European, Spanish, Portuguese, French, German |
-| `cp437` | 0 | US ASCII + box-drawing characters |
-| `cp850` | 2 | Multilingual Latin I |
-| `cp858` | 19 | Latin I + Euro sign (€) |
-| `cp860` | 3 | Portuguese |
-| `cp863` | 4 | Canadian French |
-| `cp865` | 5 | Nordic |
-| `cp864` | 22 | Arabic |
+| Codepage | ESC/POS ID | Coverage                                                           |
+| -------- | ---------- | ------------------------------------------------------------------ |
+| `cp1252` | 16         | **Default.** Western European, Spanish, Portuguese, French, German |
+| `cp437`  | 0          | US ASCII + box-drawing characters                                  |
+| `cp850`  | 2          | Multilingual Latin I                                               |
+| `cp858`  | 19         | Latin I + Euro sign (€)                                            |
+| `cp860`  | 3          | Portuguese                                                         |
+| `cp863`  | 4          | Canadian French                                                    |
+| `cp865`  | 5          | Nordic                                                             |
+| `cp864`  | 22         | Arabic                                                             |
 
 ## ESC/POS Commands
 
 The ESC/POS endpoint accepts an array of commands, each as `[method, ...args]`:
 
-| Command | Args | Description |
-|---------|------|-------------|
-| `initialize` | — | Reset printer |
-| `codepage` | `name` | Set code page (e.g. `"cp1252"`) |
-| `line` | `text` | Print text + line feed |
-| `text` | `text` | Print text without line feed |
-| `raw` | `text` | Print pre-formatted text |
-| `newline` | — | Print empty line |
-| `empty` | — | Print empty line (alias) |
-| `bold` | `true/false` | Toggle bold |
-| `underline` | `0/1/2` | Underline off / thin / thick |
-| `align` | `left/center/right` | Set alignment |
-| `font` | `0/1` | Select font (0=Font A 12x24, 1=Font B 9x17) |
-| `textSize` | `width, height` | Text size multiplier (1–8) |
-| `invert` | `true/false` | Reverse (white on black) |
-| `rule` | `[char]` | Print horizontal rule (default `"-"`) |
-| `columns` | `[col1, col2, ...]` | Print columns across page width |
-| `pair` | `left, right, [fill]` | Key-value with dot fill (e.g. `Subtotal......$9.99`) |
-| `feed` | `[lines]` | Feed paper |
-| `cut` | `[type, feedLines]` | Cut paper (`"partial"` or `"full"`) |
-| `openCashDrawer` | `[pin]` | Open cash drawer (0=pin 2, 1=pin 5) |
-| `image` | `data, {options}` | Print 1-bit raster image (see below) |
-| `barcode` | `data, {options}` | Print 1D barcode (see below) |
-| `qrcode` | `data, {options}` | Print QR code (see below) |
-| `pdf417` | `data, {options}` | Print PDF417 barcode (see below) |
+| Command          | Args                  | Description                                          |
+| ---------------- | --------------------- | ---------------------------------------------------- |
+| `initialize`     | —                     | Reset printer                                        |
+| `codepage`       | `name`                | Set code page (e.g. `"cp1252"`)                      |
+| `line`           | `text`                | Print text + line feed                               |
+| `text`           | `text`                | Print text without line feed                         |
+| `raw`            | `text`                | Print pre-formatted text                             |
+| `newline`        | —                     | Print empty line                                     |
+| `empty`          | —                     | Print empty line (alias)                             |
+| `bold`           | `true/false`          | Toggle bold                                          |
+| `underline`      | `0/1/2`               | Underline off / thin / thick                         |
+| `align`          | `left/center/right`   | Set alignment                                        |
+| `font`           | `0/1`                 | Select font (0=Font A 12x24, 1=Font B 9x17)          |
+| `textSize`       | `width, height`       | Text size multiplier (1–8)                           |
+| `invert`         | `true/false`          | Reverse (white on black)                             |
+| `rule`           | `[char]`              | Print horizontal rule (default `"-"`)                |
+| `columns`        | `[col1, col2, ...]`   | Print columns across page width                      |
+| `pair`           | `left, right, [fill]` | Key-value with dot fill (e.g. `Subtotal......$9.99`) |
+| `feed`           | `[lines]`             | Feed paper                                           |
+| `cut`            | `[type, feedLines]`   | Cut paper (`"partial"` or `"full"`)                  |
+| `openCashDrawer` | `[pin]`               | Open cash drawer (0=pin 2, 1=pin 5)                  |
+| `image`          | `data, {options}`     | Print 1-bit raster image (see below)                 |
+| `barcode`        | `data, {options}`     | Print 1D barcode (see below)                         |
+| `qrcode`         | `data, {options}`     | Print QR code (see below)                            |
+| `pdf417`         | `data, {options}`     | Print PDF417 barcode (see below)                     |
 
 ### Image Options
 
@@ -245,13 +255,14 @@ The ESC/POS endpoint accepts an array of commands, each as `[method, ...args]`:
 
 Prints a **1-bit monochrome raster image** using `GS v 0`. The data must be raw pixel bytes — not a PNG, BMP, or JPEG file. Each bit represents one pixel (1=black, 0=white), MSB first, packed left-to-right, top-to-bottom.
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `width` | *(required)* | Image width in pixels (must be a multiple of 8) |
-| `height` | *(auto)* | Image height in pixels. If omitted, calculated from data length |
-| `mode` | `0` | 0=normal, 1=double width, 2=double height, 3=both |
+| Option   | Default      | Description                                                     |
+| -------- | ------------ | --------------------------------------------------------------- |
+| `width`  | _(required)_ | Image width in pixels (must be a multiple of 8)                 |
+| `height` | _(auto)_     | Image height in pixels. If omitted, calculated from data length |
+| `mode`   | `0`          | 0=normal, 1=double width, 2=double height, 3=both               |
 
 **Preparing image data:**
+
 1. Convert your image to 1-bit monochrome (black & white, no grayscale)
 2. Each row = `width / 8` bytes. Total data = `(width / 8) * height` bytes
 3. Base64-encode the raw pixel bytes
@@ -264,6 +275,7 @@ Prints a **1-bit monochrome raster image** using `GS v 0`. The data must be raw 
 | 58mm | 384 px |
 
 **Validation errors** returned if:
+
 - `width` is missing or not a multiple of 8
 - Data is empty or not valid base64
 - Data length doesn't match `width × height`
@@ -272,15 +284,19 @@ Prints a **1-bit monochrome raster image** using `GS v 0`. The data must be raw 
 ### Barcode Options
 
 ```json
-["barcode", "12345678", { "type": "CODE128", "height": 80, "width": 2, "hri": "below" }]
+[
+  "barcode",
+  "12345678",
+  { "type": "CODE128", "height": 80, "width": 2, "hri": "below" }
+]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `type` | `CODE128` | `UPC-A`, `UPC-E`, `EAN13`, `EAN8`, `CODE39`, `ITF`, `CODABAR`, `CODE93`, `CODE128` |
-| `height` | `80` | Barcode height in dots (1–255) |
-| `width` | `2` | Bar width multiplier (2–6) |
-| `hri` | `below` | Human-readable text: `none`, `above`, `below`, `both` |
+| Option   | Default   | Description                                                                        |
+| -------- | --------- | ---------------------------------------------------------------------------------- |
+| `type`   | `CODE128` | `UPC-A`, `UPC-E`, `EAN13`, `EAN8`, `CODE39`, `ITF`, `CODABAR`, `CODE93`, `CODE128` |
+| `height` | `80`      | Barcode height in dots (1–255)                                                     |
+| `width`  | `2`       | Bar width multiplier (2–6)                                                         |
+| `hri`    | `below`   | Human-readable text: `none`, `above`, `below`, `both`                              |
 
 ### QR Code Options
 
@@ -288,24 +304,28 @@ Prints a **1-bit monochrome raster image** using `GS v 0`. The data must be raw 
 ["qrcode", "https://example.com", { "size": 6, "errorCorrection": "M" }]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `size` | `6` | Module size in dots (1–16) |
-| `errorCorrection` | `M` | Error correction level: `L` (7%), `M` (15%), `Q` (25%), `H` (30%) |
+| Option            | Default | Description                                                       |
+| ----------------- | ------- | ----------------------------------------------------------------- |
+| `size`            | `6`     | Module size in dots (1–16)                                        |
+| `errorCorrection` | `M`     | Error correction level: `L` (7%), `M` (15%), `Q` (25%), `H` (30%) |
 
 ### PDF417 Options
 
 ```json
-["pdf417", "Invoice data here", { "columns": 0, "width": 3, "errorCorrection": 1 }]
+[
+  "pdf417",
+  "Invoice data here",
+  { "columns": 0, "width": 3, "errorCorrection": 1 }
+]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `columns` | `0` | Number of columns (0=auto, 1–30) |
-| `rows` | `0` | Number of rows (0=auto, 3–90) |
-| `width` | `3` | Module width (2–8) |
-| `height` | `3` | Row height (2–8) |
-| `errorCorrection` | `1` | Error correction level (0–8) |
+| Option            | Default | Description                      |
+| ----------------- | ------- | -------------------------------- |
+| `columns`         | `0`     | Number of columns (0=auto, 1–30) |
+| `rows`            | `0`     | Number of rows (0=auto, 3–90)    |
+| `width`           | `3`     | Module width (2–8)               |
+| `height`          | `3`     | Row height (2–8)                 |
+| `errorCorrection` | `1`     | Error correction level (0–8)     |
 
 ## Cloud Relay (Remote Printing)
 
@@ -371,18 +391,18 @@ Start EDPrintTool normally (Node.js or Windows exe). It connects to the relay wh
 ```js
 // JavaScript client library (relay mode)
 const ep = new EDPrint({
-  mode: 'relay',
-  relayUrl: 'https://your-relay.example.com',
-  locationId: 'store-a',
-  apiKey: 'generated-key',
+  mode: "relay",
+  relayUrl: "https://your-relay.example.com",
+  locationId: "store-a",
+  apiKey: "generated-key",
 });
-await ep.print('my-printer', '^XA^FO50,50^ADN,36,20^FDHello^FS^XZ');
+await ep.print("my-printer", "^XA^FO50,50^ADN,36,20^FDHello^FS^XZ");
 
 // Or plain fetch
-fetch('https://your-relay.example.com/api/locations/store-a/print/my-printer', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', 'X-API-Key': 'generated-key' },
-  body: JSON.stringify({ zpl: '^XA...^XZ', copies: 1 })
+fetch("https://your-relay.example.com/api/locations/store-a/print/my-printer", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "X-API-Key": "generated-key" },
+  body: JSON.stringify({ zpl: "^XA...^XZ", copies: 1 }),
 });
 ```
 
@@ -390,23 +410,23 @@ fetch('https://your-relay.example.com/api/locations/store-a/print/my-printer', {
 
 **Admin endpoints** (require `X-Admin-Key` header):
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/status` | Relay status, location count, connected count |
-| `POST` | `/api/locations` | Register a location |
-| `GET` | `/api/locations` | List all locations with online status |
-| `DELETE` | `/api/locations/:id` | Remove a location |
+| Method   | Path                 | Description                                   |
+| -------- | -------------------- | --------------------------------------------- |
+| `GET`    | `/api/status`        | Relay status, location count, connected count |
+| `POST`   | `/api/locations`     | Register a location                           |
+| `GET`    | `/api/locations`     | List all locations with online status         |
+| `DELETE` | `/api/locations/:id` | Remove a location                             |
 
 **Print endpoints** (require `X-API-Key` header):
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/locations/:id/status` | EDPrintTool status at location |
-| `GET` | `/api/locations/:id/printers` | List printers at location |
-| `POST` | `/api/locations/:id/print/:printerId` | Print ZPL |
-| `POST` | `/api/locations/:id/print-escpos/:printerId` | Print ESC/POS |
-| `POST` | `/api/locations/:id/print-document/:printerId` | Print PDF |
-| `POST` | `/api/locations/:id/print-raw` | Quick print to IP:port |
+| Method | Path                                           | Description                    |
+| ------ | ---------------------------------------------- | ------------------------------ |
+| `GET`  | `/api/locations/:id/status`                    | EDPrintTool status at location |
+| `GET`  | `/api/locations/:id/printers`                  | List printers at location      |
+| `POST` | `/api/locations/:id/print/:printerId`          | Print ZPL                      |
+| `POST` | `/api/locations/:id/print-escpos/:printerId`   | Print ESC/POS                  |
+| `POST` | `/api/locations/:id/print-document/:printerId` | Print PDF                      |
+| `POST` | `/api/locations/:id/print-raw`                 | Quick print to IP:port         |
 
 See [`relay/README.md`](relay/README.md) for full deployment and configuration docs.
 

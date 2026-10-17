@@ -1,0 +1,370 @@
+{
+  "info": {
+    "_postman_id": "edprinttool-rest-api-v1",
+    "name": "EDPrintTool API",
+    "description": "Free open-source alternative to QZ Tray.\n\nLocal thermal printer service (ZPL + ESC/POS).\nBase URL: http://localhost:8189\n\nDocs: https://github.com/human01-io/EDPrintTool",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8189",
+      "type": "string"
+    },
+    {
+      "key": "printerId",
+      "value": "my-printer-id",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Status",
+      "item": [
+        {
+          "name": "GET Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "status"]
+            },
+            "description": "Server status, version and number of configured printers."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Printers",
+      "item": [
+        {
+          "name": "List Printers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/printers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers"]
+            },
+            "description": "Returns all configured printers."
+          },
+          "response": []
+        },
+        {
+          "name": "Discover System Printers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/printers/discover",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers", "discover"]
+            },
+            "description": "Discovers printers installed on the OS (Windows Get-Printer / CUPS lpstat)."
+          },
+          "response": []
+        },
+        {
+          "name": "Add Network Printer (ZPL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Warehouse Zebra\",\n  \"type\": \"network\",\n  \"host\": \"192.168.1.100\",\n  \"port\": 9100,\n  \"settings\": {\n    \"language\": \"ZPL\",\n    \"labelPreset\": \"4x6\",\n    \"darkness\": 15,\n    \"speed\": 4\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/printers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers"]
+            },
+            "description": "Add a network ZPL label printer (TCP 9100)."
+          },
+          "response": []
+        },
+        {
+          "name": "Add USB Printer (Windows ESC/POS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Front Desk Receipt\",\n  \"type\": \"usb\",\n  \"windowsPrinter\": \"EPSON TM-T88V\",\n  \"settings\": {\n    \"language\": \"ESC/POS\",\n    \"paperWidth\": \"80mm\",\n    \"autoCut\": true,\n    \"cutType\": \"partial\",\n    \"printerProfile\": \"generic\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/printers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers"]
+            },
+            "description": "Add a Windows USB ESC/POS receipt printer."
+          },
+          "response": []
+        },
+        {
+          "name": "Add USB Printer (CUPS macOS/Linux)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kitchen Printer\",\n  \"type\": \"usb\",\n  \"cupsQueue\": \"Star_TSP100\",\n  \"settings\": {\n    \"language\": \"ESC/POS\",\n    \"paperWidth\": \"80mm\",\n    \"printerProfile\": \"star\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/printers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers"]
+            },
+            "description": "Add a CUPS USB printer (macOS / Linux)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Printer Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labelPreset\": \"4x4\",\n  \"darkness\": 20,\n  \"speed\": 6\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/printers/{{printerId}}/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers", "{{printerId}}", "settings"]
+            },
+            "description": "Partially update settings. Changing labelPreset auto-updates widthDots/heightDots."
+          },
+          "response": []
+        },
+        {
+          "name": "Debug Printer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/printers/{{printerId}}/debug",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers", "{{printerId}}", "debug"]
+            },
+            "description": "Returns current settings + hex dump of a test payload."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Printer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/printers/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printers", "{{printerId}}"]
+            },
+            "description": "Remove a printer from the configuration."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Presets & Profiles",
+      "item": [
+        {
+          "name": "Label Presets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/label-presets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "label-presets"]
+            },
+            "description": "Available ZPL label size presets (4x8 down to 1x0.5)."
+          },
+          "response": []
+        },
+        {
+          "name": "Printer Profiles (ESC/POS)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/printer-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "printer-profiles"]
+            },
+            "description": "ESC/POS capability profiles (Epson, Star, Bixolon, Citizen, generic…)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Printing",
+      "item": [
+        {
+          "name": "Print ZPL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"zpl\": \"^XA^FO50,50^ADN,36,20^FDHello World^FS^XZ\",\n  \"copies\": 1,\n  \"applySettings\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print", "{{printerId}}"]
+            },
+            "description": "Send ZPL to a configured printer. applySettings=true prepends the saved label size / darkness / speed config."
+          },
+          "response": []
+        },
+        {
+          "name": "Print ZPL (raw text body)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "^XA^FO50,50^ADN,36,20^FDHello World^FS^XZ"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print", "{{printerId}}"]
+            },
+            "description": "Alternative: send pure ZPL as text/plain body."
+          },
+          "response": []
+        },
+        {
+          "name": "Print ESC/POS (structured)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commands\": [\n    [\"initialize\"],\n    [\"align\", \"center\"],\n    [\"bold\", true],\n    [\"textSize\", 1, 2],\n    [\"line\", \"MI TIENDA\"],\n    [\"textSize\", 1, 1],\n    [\"bold\", false],\n    [\"line\", \"RFC: XAXX010101000\"],\n    [\"rule\", \"=\"],\n    [\"align\", \"left\"],\n    [\"columns\", [\"Widget A\", \"2\", \"$9.99\"]],\n    [\"columns\", [\"Widget B\", \"1\", \"$4.50\"]],\n    [\"rule\"],\n    [\"pair\", \"Subtotal\", \"$14.49\"],\n    [\"pair\", \"IVA 16%\", \"$2.32\"],\n    [\"bold\", true],\n    [\"pair\", \"TOTAL\", \"$16.81\"],\n    [\"bold\", false],\n    [\"cut\", \"partial\", 4]\n  ],\n  \"copies\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print-escpos/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print-escpos", "{{printerId}}"]
+            },
+            "description": "Structured ESC/POS commands. Each command is [method, ...args]."
+          },
+          "response": []
+        },
+        {
+          "name": "Print ESC/POS with Barcode + QR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commands\": [\n    [\"initialize\"],\n    [\"align\", \"center\"],\n    [\"bold\", true],\n    [\"line\", \"ORDER #12345\"],\n    [\"bold\", false],\n    [\"newline\"],\n    [\"barcode\", \"123456789012\", { \"type\": \"CODE128\", \"height\": 80, \"width\": 2, \"hri\": \"below\" }],\n    [\"newline\"],\n    [\"qrcode\", \"https://example.com/order/12345\", { \"size\": 6, \"errorCorrection\": \"M\" }],\n    [\"cut\", \"partial\", 4]\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print-escpos/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print-escpos", "{{printerId}}"]
+            },
+            "description": "Example with CODE128 barcode and QR code."
+          },
+          "response": []
+        },
+        {
+          "name": "Print PDF Document (USB only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file\": \"JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCA2MTIgNzkyXS9Db250ZW50cyA0IDAgUj4+CmVuZG9iago0IDAgb2JqCjw8L0xlbmd0aCA0ND4+CnN0cmVhbQpCVAovRjEgMjQgVGYKNzIgNzIwIFRkCihIZWxsbyBQREYpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKMSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2E+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKNSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMTgzIDAwMDAwIG4gCjAwMDAwMDAyNTAgMDAwMDAgbiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMDk0IDAwMDAwIG4gCjAwMDAwMDAzMTcgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDYvUm9vdCA1IDAgUj4+CnN0YXJ0eHJlZgozNjUKJSVFT0YK\",\n  \"copies\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print-document/{{printerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print-document", "{{printerId}}"]
+            },
+            "description": "Print a base64-encoded PDF through the OS spooler (USB printers only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Print Raw (Quick – no saved printer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"host\": \"192.168.1.100\",\n  \"port\": 9100,\n  \"zpl\": \"^XA^FO50,50^ADN,36,20^FDHello from raw^FS^XZ\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/print-raw",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "print-raw"]
+            },
+            "description": "Send raw ZPL directly to an IP:port without saving a printer first."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
