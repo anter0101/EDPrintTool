@@ -21,6 +21,7 @@ const allowedOrigins = new Set([
   "http://localhost:3001",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:3001",
+  "https://kw90f4gz-3000.eun1.devtunnels.ms",
   ...configuredOrigins,
 ]);
 
@@ -195,12 +196,10 @@ app.post("/api/print/:printerId", async (req, res) => {
     const applySettings =
       typeof req.body === "object" ? req.body.applySettings : true;
     if (!zpl)
-      return res
-        .status(400)
-        .json({
-          error:
-            'Missing ZPL data. Send as text body or { "zpl": "...", "copies": 1 }',
-        });
+      return res.status(400).json({
+        error:
+          'Missing ZPL data. Send as text body or { "zpl": "...", "copies": 1 }',
+      });
     const result = await printer.print(req.params.printerId, zpl, {
       copies,
       applySettings,
