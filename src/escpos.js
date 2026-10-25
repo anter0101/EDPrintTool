@@ -247,4 +247,10 @@ function toCP864(str, options) {
   return Buffer.from(bytes);
 }
 
-module.exports = { toCP864, shapeArabic, bidiReorder, normalize };
+module.exports = {
+  EscPosEncoder,
+  CODEPAGES,
+  COLUMNS,
+  toCP864,
+  UNICODE_TO_CP864: Object.fromEntries(CP864),
+};
