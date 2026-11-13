@@ -184,7 +184,7 @@ function reorderLine(line) {
   if (!types.includes("R")) return line;
 
   // Neutrals (space, : / . , # -) between two LTR chars stay LTR
-  // (dates, times, "25.00", "Developed by: MNA"); every other neutral is RTL.
+  // (dates, times, "25.00", "Developed by: codify301@gmail.com"); every other neutral is RTL.
   for (let i = 0; i < chars.length; i++) {
     if (types[i] !== "N") continue;
     let j = i;
